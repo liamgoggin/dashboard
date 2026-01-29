@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Overview - Budget Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #2a2a2a;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #3a3a3a;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #808080;
+            text-decoration: none;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: #b0b0b0;
+        }
+
+        .controls {
+            background-color: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .controls label {
+            margin-right: 10px;
+            color: #b0b0b0;
+        }
+
+        .controls select,
+        .controls input {
+            background-color: #1a1a1a;
+            border: 2px solid #3a3a3a;
+            color: #e0e0e0;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-right: 20px;
+        }
+
+        .controls button {
+            background-color: #3a3a3a;
+            border: 2px solid #4a4a4a;
+            color: #e0e0e0;
+            padding: 12px 24px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .controls button:hover {
+            background-color: #4a4a4a;
+            border-color: #5a5a5a;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background-color: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #3a3a3a;
+        }
+
+        th {
+            background-color: #1a1a1a;
+            font-weight: normal;
+        }
+
+        .category-header {
+            background-color: #2a2a2a;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .subcategory-row {
+            background-color: #1a1a1a;
+        }
+
+        .total-row {
+            background-color: #2a2a2a;
+            font-weight: bold;
+        }
+
+        .section-total {
+            background-color: #3a3a3a;
+            font-weight: bold;
+        }
+
+        .income-section {
+            border-left: 3px solid #51cf66;
+        }
+
+        .expense-section {
+            border-left: 3px solid #ff6b6b;
+        }
+
+        .amount {
+            text-align: right;
+            font-family: monospace;
+        }
+
+        .positive {
+            color: #51cf66;
+        }
+
+        .negative {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="back-link">← BACK TO BUDGET</a>
+        <h1>BUDGET OVERVIEW</h1>
+    </div>
+
+    <div class="controls">
+        <label for="month-select">SELECT MONTH:</label>
+        <select id="month-select"></select>
+        <label for="year-select">YEAR:</label>
+        <select id="year-select"></select>
+        <button onclick="exportToCSV()">EXPORT TO CSV</button>
+    </div>
+
+    <div class="table-container">
+        <table id="budget-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th>WEEK 1</th>
+                    <th>WEEK 2</th>
+                    <th>WEEK 3</th>
+                    <th>WEEK 4</th>
+                    <th>WEEK 5</th>
+                    <th>MONTH TOTAL</th>
+                    <th>YEAR AVERAGE</th>
+                </tr>
+                <tr id="date-headers">
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="budget-body">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let transactions = [];
+
+        function initializeControls() {
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+
+            const months = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+
+            months.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+
+            const currentYearValue = new Date().getFullYear();
+            for (let year = currentYearValue - 2; year <= currentYearValue + 1; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+
+            monthSelect.value = currentMonth;
+            yearSelect.value = currentYear;
+
+            monthSelect.addEventListener('change', () => {
+                currentMonth = parseInt(monthSelect.value);
+                renderBudget();
+            });
+
+            yearSelect.addEventListener('change', () => {
+                currentYear = parseInt(yearSelect.value);
+                renderBudget();
+            });
+        }
+
+        function getWeeksInMonth(year, month) {
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            const weeks = [];
+            let currentWeekStart = new Date(firstDay);
+            
+            while (currentWeekStart <= lastDay) {
+                const weekEnd = new Date(currentWeekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                
+                if (weekEnd > lastDay) {
+                    weeks.push({
+                        start: new Date(currentWeekStart),
+                        end: new Date(lastDay)
+                    });
+                } else {
+                    weeks.push({
+                        start: new Date(currentWeekStart),
+                        end: new Date(weekEnd)
+                    });
+                }
+                
+                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            }
+            
+            return weeks;
+        }
+
+        function formatDateRange(start, end) {
+            const options = { day: 'numeric', month: 'long' };
+            return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+        }
+
+        function getTransactionsForWeek(weekStart, weekEnd, category, type) {
+            return transactions.filter(t => {
+                const transDate = new Date(t.date);
+                return transDate >= weekStart && 
+                       transDate <= weekEnd && 
+                       t.category === category && 
+                       t.type === type;
+            });
+        }
+
+        function sumTransactions(transactions) {
+            return transactions.reduce((sum, t) => sum + t.amount, 0);
+        }
+
+        function renderBudget() {
+            transactions = JSON.parse(localStorage.getItem('budgetData') || '[]');
+            const weeks = getWeeksInMonth(currentYear, currentMonth);
+            
+            // Update date headers
+            const dateRow = document.getElementById('date-headers');
+            dateRow.innerHTML = '<th></th><th></th>';
+            weeks.forEach(week => {
+                const th = document.createElement('th');
+                th.textContent = formatDateRange(week.start, week.end);
+                dateRow.appendChild(th);
+            });
+            // Add empty cells for month total and year average
+            dateRow.innerHTML += '<th></th><th></th>';
+
+            const tbody = document.getElementById('budget-body');
+            tbody.innerHTML = '';
+
+            // Calculate totals first
+            const weeklyIncome = weeks.map(week => {
+                return transactions
+                    .filter(t => {
+                        const transDate = new Date(t.date);
+                        return transDate >= week.start && transDate <= week.end && t.type === 'income';
+                    })
+                    .reduce((sum, t) => sum + t.amount, 0);
+            });
+
+            const weeklyExpenses = weeks.map(week => {
+                return transactions
+                    .filter(t => {
+                        const transDate = new Date(t.date);
+                        return transDate >= week.start && transDate <= week.end && t.type === 'expense';
+                    })
+                    .reduce((sum, t) => sum + t.amount, 0);
+            });
+
+            const weeklyNet = weeklyIncome.map((income, i) => income - weeklyExpenses[i]);
+
+            // Summary rows
+            addRow(tbody, 'TOTAL INCOME', '', weeklyIncome, 'income', 'section-total');
+            addRow(tbody, 'TOTAL EXPENSES', '', weeklyExpenses, 'expense', 'section-total');
+            addRow(tbody, 'NET INCOME', '', weeklyNet, 'net', 'section-total');
+            
+            addEmptyRow(tbody);
+
+            // INCOME SECTION
+            addRow(tbody, 'INCOME', '', [], '', 'category-header income-section');
+            
+            const incomeCategories = ['YA', 'Bartending @ The RUC', 'Tutoring', 'NP', 'Interest', 'Other'];
+            const incomeWeeklyTotals = Array(weeks.length).fill(0);
+
+            incomeCategories.forEach(category => {
+                const weeklyAmounts = weeks.map(week => {
+                    const trans = getTransactionsForWeek(week.start, week.end, category, 'income');
+                    return sumTransactions(trans);
+                });
+                
+                weeklyAmounts.forEach((amt, i) => incomeWeeklyTotals[i] += amt);
+                addRow(tbody, category, '', weeklyAmounts, 'income', 'subcategory-row income-section');
+            });
+
+            addEmptyRow(tbody);
+            addRow(tbody, 'TOTAL INCOME', '', incomeWeeklyTotals, 'income', 'total-row income-section');
+            
+            addEmptyRow(tbody);
+
+            // EXPENSES SECTION
+            addRow(tbody, 'EXPENSES', '', [], '', 'category-header expense-section');
+            
+            // Transportation
+            addRow(tbody, 'TRANSPORTATION', '', [], '', 'category-header expense-section');
+            const transportCategories = ['Public Transport', 'Interstate Buses', 'Fuel', 'Parking', 'Uber', 'Other'];
+            addCategorySection(tbody, transportCategories, weeks, 'expense-section');
+
+            // Daily Living
+            addRow(tbody, 'DAILY LIVING', '', [], '', 'category-header expense-section');
+            const dailyCategories = ['Groceries', 'Eating Out', 'Coffee/s', 'Clothing', 'Washer/Dryer', 'Barber', 'Education', 'Other'];
+            addCategorySection(tbody, dailyCategories, weeks, 'expense-section');
+
+            // Entertainment
+            addRow(tbody, 'ENTERTAINMENT', '', [], '', 'category-header expense-section');
+            const entertainmentCategories = ['Sports Games', 'Alcohol', 'Subscriptions', 'Books', 'Other Events/Activities'];
+            addCategorySection(tbody, entertainmentCategories, weeks, 'expense-section');
+
+            // Health
+            addRow(tbody, 'HEALTH', '', [], '', 'category-header expense-section');
+            const healthCategories = ['Gym Membership', 'Supplements', 'Toiletries/Personal Care', 'Other'];
+            addCategorySection(tbody, healthCategories, weeks, 'expense-section');
+
+            // Other
+            addRow(tbody, 'OTHER', '', [], '', 'category-header expense-section');
+            const otherCategories = ['Gifts', 'Donations', 'Exchange Trip', 'Holidays'];
+            addCategorySection(tbody, otherCategories, weeks, 'expense-section');
+
+            addEmptyRow(tbody);
+            addRow(tbody, 'TOTAL EXPENSES', '', weeklyExpenses, 'expense', 'total-row expense-section');
+        }
+
+        function addCategorySection(tbody, categories, weeks, sectionClass) {
+            const sectionTotals = Array(weeks.length).fill(0);
+
+            categories.forEach(category => {
+                const weeklyAmounts = weeks.map(week => {
+                    const trans = getTransactionsForWeek(week.start, week.end, category, 'expense');
+                    return sumTransactions(trans);
+                });
+                
+                weeklyAmounts.forEach((amt, i) => sectionTotals[i] += amt);
+                addRow(tbody, category, '', weeklyAmounts, 'expense', `subcategory-row ${sectionClass}`);
+            });
+
+            addRow(tbody, '', '', sectionTotals, 'expense', `total-row ${sectionClass}`);
+        }
+
+        function addRow(tbody, label1, label2, amounts, type, className) {
+            const row = tbody.insertRow();
+            row.className = className;
+
+            const cell1 = row.insertCell();
+            cell1.textContent = label1;
+            
+            const cell2 = row.insertCell();
+            cell2.textContent = label2;
+
+            if (amounts.length === 0) {
+                // Header row
+                for (let i = 0; i < 7; i++) {
+                    row.insertCell();
+                }
+            } else {
+                amounts.forEach(amount => {
+                    const cell = row.insertCell();
+                    cell.className = 'amount';
+                    if (amount !== 0) {
+                        cell.textContent = `$${amount.toFixed(2)}`;
+                        if (type === 'expense') cell.classList.add('negative');
+                        if (type === 'income') cell.classList.add('positive');
+                        if (type === 'net') cell.classList.add(amount >= 0 ? 'positive' : 'negative');
+                    } else {
+                        cell.textContent = '$0.00';
+                    }
+                });
+
+                // Month total
+                const monthTotal = amounts.reduce((sum, amt) => sum + amt, 0);
+                const totalCell = row.insertCell();
+                totalCell.className = 'amount';
+                totalCell.textContent = `$${monthTotal.toFixed(2)}`;
+                if (type === 'expense') totalCell.classList.add('negative');
+                if (type === 'income') totalCell.classList.add('positive');
+                if (type === 'net') totalCell.classList.add(monthTotal >= 0 ? 'positive' : 'negative');
+
+                // Year average (month total / number of weeks, simplified)
+                const yearAvg = monthTotal / amounts.length;
+                const avgCell = row.insertCell();
+                avgCell.className = 'amount';
+                avgCell.textContent = `$${yearAvg.toFixed(2)}`;
+                if (type === 'expense') avgCell.classList.add('negative');
+                if (type === 'income') avgCell.classList.add('positive');
+                if (type === 'net') avgCell.classList.add(yearAvg >= 0 ? 'positive' : 'negative');
+            }
+        }
+
+        function addEmptyRow(tbody) {
+            const row = tbody.insertRow();
+            for (let i = 0; i < 9; i++) {
+                row.insertCell();
+            }
+        }
+
+        function exportToCSV() {
+            const table = document.getElementById('budget-table');
+            let csv = [];
+            
+            for (let row of table.rows) {
+                let csvRow = [];
+                for (let cell of row.cells) {
+                    csvRow.push('"' + cell.textContent.replace(/"/g, '""') + '"');
+                }
+                csv.push(csvRow.join(','));
+            }
+            
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            a.download = `budget_${months[currentMonth]}_${currentYear}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize
+        initializeControls();
+        renderBudget();
+    </script>
+</body>
+</html>

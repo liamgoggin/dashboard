@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Routines</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Daily Routines</h1>
+            <p class="date" id="currentDate"></p>
+        </header>
+        
+        <div class="routine-cards">
+            <a href="morning.html" class="routine-card">
+                <div class="icon">☀️</div>
+                <h2>Morning Routine</h2>
+                <p>Start your day right</p>
+            </a>
+            
+            <a href="evening.html" class="routine-card">
+                <div class="icon">🌙</div>
+                <h2>Evening Routine</h2>
+                <p>Wind down peacefully</p>
+            </a>
+        </div>
+        
+        <div class="reset-info">
+            <p>✨ Lists automatically reset each day at midnight</p>
+        </div>
+    </div>
+    
+    <script>
+        // Display current date
+        const dateElement = document.getElementById('currentDate');
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateElement.textContent = today.toLocaleDateString('en-US', options);
+    </script>
+</body>
+</html>

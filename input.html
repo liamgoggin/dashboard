@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Data - Budget Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #2a2a2a;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #3a3a3a;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #808080;
+            text-decoration: none;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: #b0b0b0;
+        }
+
+        .content {
+            max-width: 1200px;
+        }
+
+        .input-section {
+            background-color: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .input-section h2 {
+            font-size: 18px;
+            font-weight: normal;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #b0b0b0;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: #1a1a1a;
+            border: 2px solid #3a3a3a;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4a4a4a;
+        }
+
+        button {
+            background-color: #3a3a3a;
+            border: 2px solid #4a4a4a;
+            color: #e0e0e0;
+            padding: 12px 24px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #4a4a4a;
+            border-color: #5a5a5a;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #3a3a3a;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area:hover {
+            border-color: #4a4a4a;
+            background-color: #1a1a1a;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #5a5a5a;
+            background-color: #2a2a2a;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #3a3a3a;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #1a3a1a;
+            border-color: #2a4a2a;
+        }
+
+        .message.error {
+            background-color: #3a1a1a;
+            border-color: #4a2a2a;
+        }
+
+        .transaction-type-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #1a1a1a;
+            border: 2px solid #3a3a3a;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background-color: #3a3a3a;
+            border-color: #4a4a4a;
+        }
+
+        .tab:hover {
+            background-color: #2a2a2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="back-link">← BACK TO BUDGET</a>
+        <h1>INPUT DATA</h1>
+    </div>
+
+    <div class="content">
+        <div id="message" class="message"></div>
+
+        <div class="input-section">
+            <h2>UPLOAD BANK STATEMENT</h2>
+            <div class="file-upload-area" id="upload-area">
+                <p>Click to select file or drag and drop</p>
+                <p style="font-size: 12px; color: #808080; margin-top: 10px;">
+                    Supported formats: CSV, JSON<br>
+                    (Automatic categorization available for CSV files with standard bank formats)
+                </p>
+            </div>
+            <input type="file" id="file-input" accept=".csv,.json">
+        </div>
+
+        <div class="input-section">
+            <h2>MANUAL ENTRY</h2>
+            
+            <div class="transaction-type-tabs">
+                <div class="tab active" data-type="expense">EXPENSE</div>
+                <div class="tab" data-type="income">INCOME</div>
+            </div>
+
+            <form id="manual-form">
+                <div class="form-group">
+                    <label for="date">DATE</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">DESCRIPTION</label>
+                    <input type="text" id="description" placeholder="Transaction description" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">AMOUNT ($)</label>
+                    <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+                </div>
+
+                <div class="form-group" id="category-group">
+                    <label for="category">CATEGORY</label>
+                    <select id="category" required>
+                        <optgroup label="TRANSPORTATION">
+                            <option value="Public Transport">Public Transport</option>
+                            <option value="Interstate Buses">Interstate Buses</option>
+                            <option value="Fuel">Fuel</option>
+                            <option value="Parking">Parking</option>
+                            <option value="Uber">Uber</option>
+                        </optgroup>
+                        <optgroup label="DAILY LIVING">
+                            <option value="Groceries">Groceries</option>
+                            <option value="Eating Out">Eating Out</option>
+                            <option value="Coffee/s">Coffee/s</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Washer/Dryer">Washer/Dryer</option>
+                            <option value="Barber">Barber</option>
+                            <option value="Education">Education</option>
+                        </optgroup>
+                        <optgroup label="ENTERTAINMENT">
+                            <option value="Sports Games">Sports Games</option>
+                            <option value="Alcohol">Alcohol</option>
+                            <option value="Subscriptions">Subscriptions</option>
+                            <option value="Books">Books</option>
+                            <option value="Other Events/Activities">Other Events/Activities</option>
+                        </optgroup>
+                        <optgroup label="HEALTH">
+                            <option value="Gym Membership">Gym Membership</option>
+                            <option value="Supplements">Supplements</option>
+                            <option value="Toiletries/Personal Care">Toiletries/Personal Care</option>
+                        </optgroup>
+                        <optgroup label="OTHER">
+                            <option value="Gifts">Gifts</option>
+                            <option value="Donations">Donations</option>
+                            <option value="Exchange Trip">Exchange Trip</option>
+                            <option value="Holidays">Holidays</option>
+                            <option value="Other">Other</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group" id="income-category-group" style="display: none;">
+                    <label for="income-category">INCOME SOURCE</label>
+                    <select id="income-category">
+                        <option value="YA">YA</option>
+                        <option value="Bartending @ The RUC">Bartending @ The RUC</option>
+                        <option value="Tutoring">Tutoring</option>
+                        <option value="NP">NP</option>
+                        <option value="Interest">Interest</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <button type="submit">ADD TRANSACTION</button>
+                <button type="button" id="clear-btn">CLEAR FORM</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Category mappings for auto-categorization
+        const categoryKeywords = {
+            'Public Transport': ['train', 'metro', 'subway', 'bus', 'transit', 'opal'],
+            'Interstate Buses': ['greyhound', 'coach', 'interstate'],
+            'Fuel': ['fuel', 'petrol', 'gas', 'bp', 'shell', 'caltex', '7-eleven fuel'],
+            'Parking': ['parking', 'park'],
+            'Uber': ['uber', 'lyft', 'taxi', 'didi'],
+            'Groceries': ['woolworths', 'coles', 'aldi', 'iga', 'supermarket', 'grocery'],
+            'Eating Out': ['restaurant', 'cafe', 'mcdonald', 'kfc', 'subway', 'domino', 'pizza', 'takeaway'],
+            'Coffee/s': ['coffee', 'starbucks', 'cafe', 'espresso'],
+            'Clothing': ['clothing', 'fashion', 'shoes', 'apparel', 'uniqlo', 'zara', 'h&m'],
+            'Barber': ['barber', 'haircut', 'salon', 'hairdress'],
+            'Education': ['university', 'college', 'book', 'course', 'tuition'],
+            'Sports Games': ['ticket', 'stadium', 'game', 'sport'],
+            'Alcohol': ['liquor', 'bottle shop', 'wine', 'beer', 'bar', 'pub'],
+            'Subscriptions': ['netflix', 'spotify', 'subscription', 'membership', 'amazon prime'],
+            'Books': ['bookstore', 'book', 'amazon books'],
+            'Gym Membership': ['gym', 'fitness', 'anytime fitness'],
+            'Supplements': ['supplement', 'vitamin', 'protein'],
+            'Toiletries/Personal Care': ['pharmacy', 'chemist', 'toiletries', 'personal care'],
+            'Gifts': ['gift', 'present'],
+            'Donations': ['donation', 'charity'],
+            'Other': []
+        };
+
+        // Auto-categorize based on description
+        function autoCategorize(description) {
+            const desc = description.toLowerCase();
+            
+            for (const [category, keywords] of Object.entries(categoryKeywords)) {
+                for (const keyword of keywords) {
+                    if (desc.includes(keyword.toLowerCase())) {
+                        return category;
+                    }
+                }
+            }
+            
+            return 'Other';
+        }
+
+        // Transaction type handling
+        let transactionType = 'expense';
+        
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                transactionType = this.dataset.type;
+                
+                if (transactionType === 'income') {
+                    document.getElementById('category-group').style.display = 'none';
+                    document.getElementById('income-category-group').style.display = 'block';
+                } else {
+                    document.getElementById('category-group').style.display = 'block';
+                    document.getElementById('income-category-group').style.display = 'none';
+                }
+            });
+        });
+
+        // File upload handling
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const content = e.target.result;
+                
+                if (file.name.endsWith('.csv')) {
+                    parseCSV(content);
+                } else if (file.name.endsWith('.json')) {
+                    parseJSON(content);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        function parseCSV(content) {
+            const lines = content.split('\n');
+            const transactions = [];
+            
+            // Try to detect CSV format and parse accordingly
+            // This is a simple parser - assumes: Date, Description, Amount columns
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const parts = line.split(',');
+                if (parts.length < 3) continue;
+                
+                const date = parts[0].trim().replace(/"/g, '');
+                const description = parts[1].trim().replace(/"/g, '');
+                const amount = parseFloat(parts[2].trim().replace(/"/g, '').replace('$', ''));
+                
+                if (date && description && !isNaN(amount)) {
+                    const category = autoCategorize(description);
+                    const type = amount < 0 ? 'expense' : 'income';
+                    
+                    transactions.push({
+                        date: date,
+                        description: description,
+                        amount: Math.abs(amount),
+                        category: category,
+                        type: type,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            }
+            
+            saveTransactions(transactions);
+            showMessage(`Successfully imported ${transactions.length} transactions`, 'success');
+        }
+
+        function parseJSON(content) {
+            try {
+                const data = JSON.parse(content);
+                const transactions = [];
+                
+                // Assuming JSON array of transactions
+                if (Array.isArray(data)) {
+                    data.forEach(item => {
+                        if (item.date && item.description && item.amount) {
+                            const category = item.category || autoCategorize(item.description);
+                            const type = item.type || (item.amount < 0 ? 'expense' : 'income');
+                            
+                            transactions.push({
+                                date: item.date,
+                                description: item.description,
+                                amount: Math.abs(item.amount),
+                                category: category,
+                                type: type,
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                    });
+                }
+                
+                saveTransactions(transactions);
+                showMessage(`Successfully imported ${transactions.length} transactions`, 'success');
+            } catch (error) {
+                showMessage('Error parsing JSON file', 'error');
+            }
+        }
+
+        function saveTransactions(newTransactions) {
+            const existing = JSON.parse(localStorage.getItem('budgetData') || '[]');
+            const combined = [...existing, ...newTransactions];
+            localStorage.setItem('budgetData', JSON.stringify(combined));
+        }
+
+        // Manual form handling
+        document.getElementById('manual-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const category = transactionType === 'expense' 
+                ? document.getElementById('category').value
+                : document.getElementById('income-category').value;
+            
+            const transaction = {
+                date: document.getElementById('date').value,
+                description: document.getElementById('description').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                category: category,
+                type: transactionType,
+                timestamp: new Date().toISOString()
+            };
+            
+            saveTransactions([transaction]);
+            showMessage('Transaction added successfully', 'success');
+            
+            this.reset();
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        });
+
+        document.getElementById('clear-btn').addEventListener('click', function() {
+            document.getElementById('manual-form').reset();
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        });
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Set default date to today
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>
