@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        h1 {
+            color: #4a5568;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: transform 0.2s;
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+        }
+
+        .info-section {
+            text-align: center;
+            color: #718096;
+            font-size: 0.95em;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .routine-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .routine-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            display: block;
+        }
+
+        .routine-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .routine-card .icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .routine-card h2 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .routine-card p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="../index.html" class="back-button">← Back</a>
+            <h1>Budget Tracker</h1>
+        </header>
+
+        <div class="info-section" id="status-text">
+            Loading budget data...
+        </div>
+
+        <div class="routine-cards">
+            <a href="input.html" class="routine-card">
+                <div class="icon">📥</div>
+                <h2>Input Data</h2>
+                <p>Upload statements or add transactions manually</p>
+            </a>
+
+            <a href="overview.html" class="routine-card">
+                <div class="icon">📊</div>
+                <h2>Budget Overview</h2>
+                <p>View weekly aggregated budget</p>
+            </a>
+
+            <a href="rawdata.html" class="routine-card">
+                <div class="icon">📋</div>
+                <h2>Raw Data</h2>
+                <p>View and manage all transactions</p>
+            </a>
+
+            <a href="performance.html" class="routine-card">
+                <div class="icon">📈</div>
+                <h2>Performance</h2>
+                <p>Visualize spending patterns</p>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Initialize budget storage if it doesn't exist
+        if (!localStorage.getItem('budgetData')) {
+            localStorage.setItem('budgetData', JSON.stringify([]));
+        }
+
+        // Display status
+        const transactions = JSON.parse(localStorage.getItem('budgetData') || '[]');
+        document.getElementById('status-text').textContent = 
+            `Database contains ${transactions.length} transaction${transactions.length !== 1 ? 's' : ''}`;
+    </script>
+</body>
+</html>
